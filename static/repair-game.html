@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+
+    <style>
+      body { font-family: Tahoma, Geneva, sans-serif; text-align: center; }
+    </style>
+
+    <!-- colyseus.js client -->
+    <script type="text/javascript" src="https://raw.githack.com/colyseus/colyseus.js/master/dist/colyseus.js"></script>
+
+    <style type="text/css">
+      .player {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        padding-top: 24px;
+        box-sizing: border-box;
+        left: 0;
+        top: 0;
+      }
+    </style>
+
+  </head>
+  <body>
+    <h1>
+      <a href="https://github.com/colyseus/colyseus-examples"><img src="https://cdn.jsdelivr.net/gh/colyseus/colyseus@master/media/header.png" height="100" alt="colyseus" /></a>
+    </h1>
+
+    <p>This example shows how to use custom data structures in your room's state.</p>
+
+    <strong>commands</strong><br>
+
+    <button onclick="up()">up</button>
+    <button onclick="down()">down</button>
+    <br />
+    <button onclick="left()">left</button>
+    <button onclick="right()">right</button>
+
+    <form action="#" onsubmit="submitPosition(); return false;">
+        <div style="border: 2px solid black; padding: 20px 0;">
+            <strong>position</strong>
+        </div>
+        <div>
+            x: <input type="number" step="0.0001" name="pos-x">
+            y: <input type="number" step="0.0001" name="pos-y">
+            z: <input type="number" step="0.0001" name="pos-z">
+            <button type="submit">wyslij</button>
+        </div>
+    </form>
+    <form action="#" onsubmit="submitRotation(); return false;">
+        <div style="border: 2px solid black; padding: 20px 0;">
+            <strong>rotation</strong>
+        </div>
+        <div>
+            x: <input type="number" step="0.0001" name="rot-x">
+            y: <input type="number" step="0.0001" name="rot-y">
+            z: <input type="number" step="0.0001" name="rot-z">
+            <button type="submit">wyslij</button>
+        </div>
+    </form>
+
+
+
+    <script>
+        var host = window.document.location.host.replace(/:.*/, '');
+
+        var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':' + location.port : ''));
+        var room;
+        client.joinOrCreate("repair-game").then(room_instance => {
+            room = room_instance
+
+            var players = {};
+            var colors = ['red', 'green', 'yellow', 'blue', 'cyan', 'magenta'];
+
+            // listen to patches coming from the server
+            room.state.players.onAdd = function (player, sessionId) {
+                var dom = document.createElement("div");
+                dom.className = "player";
+                dom.style.left = player.position.x + "px";
+                dom.style.top = player.position.y + "px";
+                dom.style.background = colors[Math.floor(Math.random() * colors.length)];
+                dom.innerText = "Player " + sessionId;
+
+                players[sessionId] = dom;
+                document.body.appendChild(dom);
+            }
+
+            room.state.players.onRemove = function (player, sessionId) {
+                document.body.removeChild(players[sessionId]);
+                delete players[sessionId];
+            }
+
+            room.state.players.onChange = function (player, sessionId) {
+                var dom = players[sessionId];
+                dom.style.left = player.position.x + "px";
+                dom.style.top = player.position.y + "px";
+            }
+
+            window.addEventListener("keydown", function (e) {
+                if (e.which === 38) {
+                    up();
+
+                } else if (e.which === 39) {
+                    right();
+
+                } else if (e.which === 40) {
+                    down();
+
+                } else if (e.which === 37) {
+                    left();
+                }
+            });
+
+        });
+
+        function submitPosition() {
+            const x = parseFloat(document.querySelector('[name=pos-x]').value);
+            const y = parseFloat(document.querySelector('[name=pos-y]').value);
+            const z = parseFloat(document.querySelector('[name=pos-z]').value);
+
+            console.log({ x, y, z });
+            room.send({ position: { x, y, z} })
+        }
+
+        function submitRotation() {
+            const x = parseFloat(document.querySelector('[name=rot-x]').value);
+            const y = parseFloat(document.querySelector('[name=rot-y]').value);
+            const z = parseFloat(document.querySelector('[name=rot-z]').value);
+
+            console.log({ x, y, z });
+            room.send({ rotation: { x, y, z} })
+        }
+
+        function up () {
+            room.send({ position: { y: -1 } });
+        }
+
+        function right () {
+            room.send({ position: { x: 1 } });
+        }
+
+        function down () {
+            room.send({ position: { y: 1 } })
+        }
+
+        function left () {
+            room.send({ position: { x: -1 } })
+        }
+
+
+    </script>
+  </body>
+</html>

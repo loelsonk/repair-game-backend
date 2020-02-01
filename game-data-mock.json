@@ -1,0 +1,20 @@
+{
+    "players": [
+        {
+            "x": 0,
+            "y": 0
+        }
+    ],
+
+    "parts": [
+        {
+            "isHeldByPlayer": "<playerId>",
+            "machinePos":  "",
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        }
+    ]
+}

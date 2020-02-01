@@ -1,7 +1,7 @@
 import path from 'path';
 import express from 'express';
 import serveIndex from 'serve-index';
-import cors from 'cors';
+// import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'colyseus';
 import { monitor } from '@colyseus/monitor';
@@ -14,7 +14,7 @@ import { AuthRoom } from "./rooms/03-auth";
 const port = Number(process.env.PORT || 2567) + Number(process.env.NODE_APP_INSTANCE || 0);
 const app = express();
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 // Attach WebSocket Server on HTTP Server.
